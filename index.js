@@ -1,91 +1,76 @@
 const express = require("express");
+const axios = require("axios"); // for fetching data from a URL
 const { createCanvas } = require("canvas");
-const axios = require("axios");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Helper Function: Fetch a random Ayah from the external API (Vercel endpoint)
-async function getRandomAyah() {
+// Fetch Ayat Data from Remote JSON
+async function getAyatData() {
   try {
-    // Make sure to replace this with your actual API URL for Ayat data
     const response = await axios.get("https://quran-ayat-json.vercel.app/");
-    const ayatData = response.data;
-    const randomIndex = Math.floor(Math.random() * ayatData.length);
-    return ayatData[randomIndex];
+    return response.data; // Return the JSON data
   } catch (error) {
-    console.error("Error fetching Ayat data:", error);
+    console.error("Error fetching ayat data:", error);
     return null;
   }
 }
 
+// Helper Function: Get a Random Ayah
+function getRandomAyah(ayat) {
+  return ayat[Math.floor(Math.random() * ayat.length)];
+}
+
 // Route 1: Return Random Ayah as JSON
 app.get("/api/ayat/json", async (req, res) => {
-  const randomAyah = await getRandomAyah();
-  if (randomAyah) {
+  const ayatData = await getAyatData();
+  if (ayatData) {
+    const randomAyah = getRandomAyah(ayatData);
     res.json(randomAyah);
   } else {
-    res.status(500).json({ error: "Failed to fetch Ayah data" });
+    res.status(500).json({ error: "Failed to fetch ayat data" });
   }
 });
 
 // Route 2: Generate and Return Ayah as Image
 app.get("/api/ayat/image", async (req, res) => {
-  const {
-    theme = "dark",
-    type = "vertical",
-    width = 800,
-    height = 400,
-  } = req.query;
-  const randomAyah = await getRandomAyah();
+  const { theme = "dark", type = "vertical", width = 800, height = 300 } = req.query;
+  const ayatData = await getAyatData();
 
-  if (randomAyah) {
-    // Convert width and height to integers (in case they are passed as strings)
-    const canvasWidth = parseInt(width);
-    const canvasHeight = parseInt(height);
+  if (ayatData) {
+    const randomAyah = getRandomAyah(ayatData);
 
-    // Define canvas size based on `type` (vertical or horizontal)
-    const canvas = createCanvas(canvasWidth, canvasHeight);
+    const canvas = createCanvas(width, type === "vertical" ? height : 200);
     const ctx = canvas.getContext("2d");
 
-    // Set Background Color based on `theme` (dark or light)
+    // Background Color
     ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Set Text Styling for Arabic
-    ctx.font = "20px Arial";
+    // Text Styling for Arabic Text
+    ctx.font = "30px Arial";
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+    ctx.fillText(randomAyah.text.arabic, 50, 100);
 
-    // Display Arabic text
-    const arabicText = randomAyah.text.arabic;
-    ctx.fillText(arabicText, 50, 100);
+    // Text Styling for English Text (smaller size)
+    ctx.font = "20px Arial";
+    ctx.fillText(randomAyah.text.english, 50, 150);
 
-    // Set Text Styling for English (smaller font size)
+    // Surah and Ayah details
     ctx.font = "16px Arial";
-    const englishText = randomAyah.text.english;
-    ctx.fillText(englishText, 50, 150);
-
-    // Additional text for Surah name and Ayah number
-    ctx.font = "16px Arial";
-    ctx.fillText(
-      `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
-      50,
-      200
-    );
+    ctx.fillText(`- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`, 50, 200);
 
     // Return as PNG Image
     res.setHeader("Content-Type", "image/png");
     res.send(canvas.toBuffer());
   } else {
-    res.status(500).json({ error: "Failed to fetch Ayah data" });
+    res.status(500).json({ error: "Failed to fetch ayat data" });
   }
 });
 
 // Home Route
 app.get("/", (req, res) => {
-  res.send(
-    "Quran Ayat Widget is running! Use /api/ayat/json or /api/ayat/image."
-  );
+  res.send("Quran Ayat Widget is running! Use /api/ayat/json or /api/ayat/image.");
 });
 
 // Start Server
