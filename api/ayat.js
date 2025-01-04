@@ -23,6 +23,28 @@ function getRandomAyah(ayat) {
   return ayat[Math.floor(Math.random() * ayat.length)];
 }
 
+// Helper Function: Split text into lines with max 7 words per line
+function wrapText(text, maxWordsPerLine) {
+  const words = text.split(" ");
+  const lines = [];
+  let currentLine = [];
+
+  words.forEach((word) => {
+    currentLine.push(word);
+    if (currentLine.length === maxWordsPerLine) {
+      lines.push(currentLine.join(" "));
+      currentLine = [];
+    }
+  });
+
+  // Add any remaining words as a new line
+  if (currentLine.length > 0) {
+    lines.push(currentLine.join(" "));
+  }
+
+  return lines;
+}
+
 // Route 1: Return Random Ayah as JSON
 module.exports.json = async (req, res) => {
   const ayatData = await getAyatData();
@@ -48,10 +70,15 @@ module.exports.image = async (req, res) => {
   const canvasHeight = parseInt(height, 10);
 
   const padding = 20; // Padding for margins
+  const lineSpacing = 25; // Increased spacing between lines
   const ayatData = await getAyatData();
 
   if (ayatData) {
     const randomAyah = getRandomAyah(ayatData);
+
+    // Wrap Hadith into lines with 7 words max
+    const arabicHadithLines = wrapText(randomAyah.hadith.arabic, 7);
+    const englishHadithLines = wrapText(randomAyah.hadith.english, 7);
 
     // Create Canvas based on the user's input width and height
     let canvasHeightAdjusted =
@@ -67,8 +94,8 @@ module.exports.image = async (req, res) => {
     const startX = padding;
     const endX = canvasWidth - padding;
 
-    // Draw the Arabic Ayah text (right-aligned)
-    ctx.font = "30px Amiri"; // Use Amiri font
+    // Draw the Arabic Ayah text (right-aligned, smaller size)
+    ctx.font = "24px Amiri"; // Smaller font size for Arabic
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
     ctx.textAlign = "right"; // Right-align Arabic text
     ctx.fillText(randomAyah.text.arabic, endX - padding, 100);
@@ -76,7 +103,7 @@ module.exports.image = async (req, res) => {
     // Draw the English translation text (left-aligned)
     ctx.font = "20px Arial";
     ctx.textAlign = "left"; // Left-align English text
-    ctx.fillText(randomAyah.text.english, startX + padding, 150);
+    ctx.fillText(randomAyah.text.english, startX + padding, 140);
 
     // Surah and Ayah details (smaller text)
     ctx.font = "16px Arial";
@@ -84,20 +111,28 @@ module.exports.image = async (req, res) => {
     ctx.fillText(
       `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
       startX + padding,
-      200
+      180
     );
 
-    // Draw the Arabic Hadith text (right-aligned)
+    // Draw the Arabic Hadith text (right-aligned, line by line)
     ctx.font = "18px Amiri";
     ctx.textAlign = "right"; // Right-align Arabic Hadith
-    ctx.fillText(randomAyah.hadith.arabic, endX - padding, 250);
+    let yOffset = 230; // Start position for Arabic Hadith
+    arabicHadithLines.forEach((line) => {
+      ctx.fillText(line, endX - padding, yOffset);
+      yOffset += lineSpacing; // Increase yOffset for the next line
+    });
 
-    // Draw the English Hadith text (left-aligned)
+    // Draw the English Hadith text (left-aligned, line by line)
     ctx.font = "18px Arial";
     ctx.textAlign = "left"; // Left-align English Hadith
-    ctx.fillText(randomAyah.hadith.english, startX + padding, 280);
+    yOffset = 260; // Start position for English Hadith
+    englishHadithLines.forEach((line) => {
+      ctx.fillText(line, startX + padding, yOffset);
+      yOffset += lineSpacing; // Increase yOffset for the next line
+    });
 
-    // Draw the footer text (centered)
+    // Footer (centered) with some padding and adjusted position
     ctx.font = "14px Arial";
     ctx.textAlign = "center"; // Center-align footer
     ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, canvasHeight - 50);
