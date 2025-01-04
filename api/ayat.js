@@ -31,11 +31,15 @@ module.exports.json = async (req, res) => {
 // Route 2: Generate and Return Ayah as Image (Customizable)
 module.exports.image = async (req, res) => {
   const {
-    theme = "dark", // default to dark theme
-    type = "vertical", // default to vertical type
-    width = 800, // default width
-    height = 300, // default height
+    theme = "dark", // Default to dark theme
+    type = "vertical", // Default to vertical type
+    width = 800, // Default width
+    height = 300, // Default height
   } = req.query;
+
+  // Parse width and height to numbers to ensure they're treated as integers
+  const canvasWidth = parseInt(width, 10) || 800;
+  const canvasHeight = parseInt(height, 10) || 300;
 
   const ayatData = await getAyatData();
 
@@ -43,7 +47,10 @@ module.exports.image = async (req, res) => {
     const randomAyah = getRandomAyah(ayatData);
 
     // Create Canvas based on the user’s input width and height
-    const canvas = createCanvas(width, type === "vertical" ? height : 200);
+    const canvas = createCanvas(
+      canvasWidth,
+      type === "vertical" ? canvasHeight : 200
+    );
     const ctx = canvas.getContext("2d");
 
     // Set background color based on theme (dark or light)
