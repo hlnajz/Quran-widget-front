@@ -18,7 +18,29 @@ async function getAyatData() {
   }
 }
 
-// Helper Function: Get a Random Ayah
+// Helper Function: Word Wrapping (limit to X words per line)
+function wrapText(ctx, text, maxWordsPerLine, startX, startY, lineHeight) {
+  const words = text.split(" ");
+  let currentLine = "";
+  let y = startY;
+
+  for (let i = 0; i < words.length; i++) {
+    const testLine = currentLine + (currentLine.length ? " " : "") + words[i];
+    const testWidth = ctx.measureText(testLine).width;
+
+    if (testWidth > ctx.canvas.width - 50) {
+      // If the line exceeds the width, draw the current line and start a new one
+      ctx.fillText(currentLine, startX, y);
+      currentLine = words[i];
+      y += lineHeight;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  ctx.fillText(currentLine, startX, y); // Draw the last line
+}
+
+// Helper Function: Get Random Ayah
 function getRandomAyah(ayat) {
   return ayat[Math.floor(Math.random() * ayat.length)];
 }
@@ -65,18 +87,37 @@ module.exports.image = async (req, res) => {
     // Draw the Arabic Ayah text
     ctx.font = "30px Amiri"; // Use Amiri font
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-    ctx.fillText(randomAyah.text.arabic, 50, 100);
+    wrapText(ctx, randomAyah.text.arabic, 8, 50, 100, 40); // Limit to 8 words per line
 
-    // Draw the English translation text (smaller)
+    // Draw the English translation text (smaller and limit to 8 words per line)
     ctx.font = "20px Arial";
-    ctx.fillText(randomAyah.text.english, 50, 150);
+    wrapText(ctx, randomAyah.text.english, 8, 50, 150, 30);
+
+    // Draw the Hadith Arabic text (limit to 8 words per line and smaller font)
+    ctx.font = "16px Amiri";
+    wrapText(ctx, randomAyah.hadith.arabic, 8, 50, 200, 30);
+
+    // Draw the Hadith English text (limit to 8 words per line and smaller font)
+    ctx.font = "16px Arial";
+    wrapText(ctx, randomAyah.hadith.english, 8, 50, 230, 30);
 
     // Surah and Ayah details (smaller text)
     ctx.font = "16px Arial";
     ctx.fillText(
       `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
       50,
-      200
+      260
+    );
+
+    // Draw footer text: "Quran Sunnah Reminder"
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#888";
+    const footerText = "Quran Sunnah Reminder";
+    const footerWidth = ctx.measureText(footerText).width;
+    ctx.fillText(
+      footerText,
+      (canvas.width - footerWidth) / 2,
+      canvas.height - 20
     );
 
     // Send the generated image as a response (PNG format)
