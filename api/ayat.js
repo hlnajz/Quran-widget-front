@@ -47,6 +47,7 @@ module.exports.image = async (req, res) => {
   const canvasWidth = parseInt(width, 10);
   const canvasHeight = parseInt(height, 10);
 
+  const padding = 20; // Padding for margins
   const ayatData = await getAyatData();
 
   if (ayatData) {
@@ -62,37 +63,56 @@ module.exports.image = async (req, res) => {
     ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw the Arabic Ayah text
+    // Set padding
+    const startX = padding;
+    const endX = canvasWidth - padding;
+
+    // Draw the Arabic Ayah text (right-aligned)
     ctx.font = "30px Amiri"; // Use Amiri font
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-    ctx.fillText(randomAyah.text.arabic, 50, 100);
+    ctx.textAlign = "right"; // Right-align Arabic text
+    ctx.fillText(randomAyah.text.arabic, endX - padding, 100);
 
-    // Draw the English translation text (smaller)
+    // Draw the English translation text (left-aligned)
     ctx.font = "20px Arial";
-    ctx.fillText(randomAyah.text.english, 50, 150);
+    ctx.textAlign = "left"; // Left-align English text
+    ctx.fillText(randomAyah.text.english, startX + padding, 150);
 
     // Surah and Ayah details (smaller text)
     ctx.font = "16px Arial";
+    ctx.textAlign = "left"; // Left-align Surah and Ayah
     ctx.fillText(
       `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
-      50,
+      startX + padding,
       200
     );
 
-    // Draw the Arabic Hadith text (smaller)
+    // Draw the Arabic Hadith text (right-aligned)
     ctx.font = "18px Amiri";
-    ctx.fillText(randomAyah.hadith.arabic, 50, 250);
+    ctx.textAlign = "right"; // Right-align Arabic Hadith
+    ctx.fillText(randomAyah.hadith.arabic, endX - padding, 250);
 
-    // Draw the English Hadith text (smaller)
+    // Draw the English Hadith text (left-aligned)
     ctx.font = "18px Arial";
-    ctx.fillText(randomAyah.hadith.english, 50, 280);
+    ctx.textAlign = "left"; // Left-align English Hadith
+    ctx.fillText(randomAyah.hadith.english, startX + padding, 280);
 
-    // Draw the footer text
+    // Draw the footer text (centered)
     ctx.font = "14px Arial";
-    ctx.fillText("Quran Sunnah Reminder", 50, canvasHeight - 50);
-    ctx.fillText("by Hamza Labbaalli. Pray for me.", 50, canvasHeight - 30);
+    ctx.textAlign = "center"; // Center-align footer
+    ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, canvasHeight - 50);
     ctx.font = "12px Arial";
-    ctx.fillText("لا تنسونا من صالح الدعاء", 50, canvasHeight - 10);
+    ctx.fillText(
+      "by Hamza Labbaalli. Pray for me.",
+      canvasWidth / 2,
+      canvasHeight - 30
+    );
+    ctx.font = "10px Arial";
+    ctx.fillText(
+      "لا تنسونا من صالح الدعاء",
+      canvasWidth / 2,
+      canvasHeight - 10
+    );
 
     // Send the generated image as a response (PNG format)
     res.setHeader("Content-Type", "image/png");
