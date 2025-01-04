@@ -11,6 +11,7 @@ app.get("/ayat/json", ayatRoutes.json);
 app.get("/ayat/image", ayatRoutes.image);
 
 // Serve static files (if needed, like HTML/CSS/JS for front-end)
+// If you decide to add front-end in the future, you can place files in the 'public' folder
 app.use(express.static("public"));
 
 // Start the server

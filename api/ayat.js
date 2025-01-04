@@ -28,36 +28,38 @@ module.exports.json = async (req, res) => {
   }
 };
 
-// Route 2: Generate and Return Ayah as Image
+// Route 2: Generate and Return Ayah as Image (Customizable)
 module.exports.image = async (req, res) => {
   const {
-    theme = "dark",
-    type = "vertical",
-    width = 800,
-    height = 300,
+    theme = "dark", // default to dark theme
+    type = "vertical", // default to vertical type
+    width = 800, // default width
+    height = 300, // default height
   } = req.query;
+
   const ayatData = await getAyatData();
 
   if (ayatData) {
     const randomAyah = getRandomAyah(ayatData);
 
+    // Create Canvas based on the user’s input width and height
     const canvas = createCanvas(width, type === "vertical" ? height : 200);
     const ctx = canvas.getContext("2d");
 
-    // Background Color
+    // Set background color based on theme (dark or light)
     ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Text Styling for Arabic Text
+    // Draw the Arabic Ayah text
     ctx.font = "30px Arial";
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
     ctx.fillText(randomAyah.text.arabic, 50, 100);
 
-    // Text Styling for English Text (smaller size)
+    // Draw the English translation text (smaller)
     ctx.font = "20px Arial";
     ctx.fillText(randomAyah.text.english, 50, 150);
 
-    // Surah and Ayah details
+    // Surah and Ayah details (smaller text)
     ctx.font = "16px Arial";
     ctx.fillText(
       `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
@@ -65,7 +67,7 @@ module.exports.image = async (req, res) => {
       200
     );
 
-    // Return as PNG Image
+    // Send the generated image as a response (PNG format)
     res.setHeader("Content-Type", "image/png");
     res.send(canvas.toBuffer());
   } else {
