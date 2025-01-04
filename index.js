@@ -34,7 +34,12 @@ app.get("/api/ayat/json", async (req, res) => {
 
 // Route 2: Generate and Return Ayah as Image
 app.get("/api/ayat/image", async (req, res) => {
-  const { theme = "dark", type = "vertical", width = 800, height = 300 } = req.query;
+  const {
+    theme = "dark",
+    type = "vertical",
+    width = 800,
+    height = 300,
+  } = req.query;
   const ayatData = await getAyatData();
 
   if (ayatData) {
@@ -58,7 +63,11 @@ app.get("/api/ayat/image", async (req, res) => {
 
     // Surah and Ayah details
     ctx.font = "16px Arial";
-    ctx.fillText(`- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`, 50, 200);
+    ctx.fillText(
+      `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
+      50,
+      200
+    );
 
     // Return as PNG Image
     res.setHeader("Content-Type", "image/png");
@@ -70,7 +79,9 @@ app.get("/api/ayat/image", async (req, res) => {
 
 // Home Route
 app.get("/", (req, res) => {
-  res.send("Quran Ayat Widget is running! Use /api/ayat/json or /api/ayat/image.");
+  res.send(
+    "Quran Ayat Widget is running! Use /api/ayat/json or /api/ayat/image."
+  );
 });
 
 // Start Server
