@@ -78,6 +78,6 @@ module.exports.image = async (req, res) => {
     res.setHeader("Content-Type", "image/png");
     res.send(canvas.toBuffer());
   } else {
-    res.status(500).json({ error: "Failed to fetch ayat data" });
+    res.status(500).json({ error: "Failed to fetch ayats data" });
   }
 };
