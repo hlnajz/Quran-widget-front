@@ -53,10 +53,9 @@ module.exports.image = async (req, res) => {
     const randomAyah = getRandomAyah(ayatData);
 
     // Create Canvas based on the user's input width and height
-    const canvas = createCanvas(
-      canvasWidth,
-      type === "vertical" ? canvasHeight : 200
-    );
+    let canvasHeightAdjusted =
+      type === "horizontal" ? canvasHeight : canvasHeight || 300; // Use the height from query for both types
+    const canvas = createCanvas(canvasWidth, canvasHeightAdjusted);
     const ctx = canvas.getContext("2d");
 
     // Set background color based on theme (dark or light)
