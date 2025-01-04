@@ -9,9 +9,9 @@
   "dependencies": {
     "axios": "^0.21.1",
     "canvas": "^2.7.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "vercel": "^39.2.5"
   },
-  "devDependencies": {},
   "author": "",
   "license": "ISC"
 }
