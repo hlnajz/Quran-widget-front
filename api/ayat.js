@@ -101,7 +101,7 @@ module.exports.image = async (req, res) => {
     ctx.fillText(randomAyah.text.arabic, endX - padding, 100);
 
     // Draw the English translation text (left-aligned)
-    ctx.font = "20px Arial";
+    ctx.font = "14px Arial";
     ctx.textAlign = "left"; // Left-align English text
     ctx.fillText(randomAyah.text.english, startX + padding, 140);
 
