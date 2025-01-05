@@ -62,15 +62,16 @@ module.exports.image = async (req, res) => {
     theme = "dark", // default to dark theme
     type = "vertical", // default to vertical type
     width = 800, // default width
-    height = 300, // default height
+    height = 500, // default height (changed to 500)
   } = req.query;
 
-  // Parse width and height to integers
   const canvasWidth = parseInt(width, 10);
   const canvasHeight = parseInt(height, 10);
 
   const padding = 20; // Padding for margins
   const lineSpacing = 25; // Increased spacing between lines
+  const borderWidth = 10; // Thickness of the border
+  const footerMargin = 30; // Margin from the footer text to the border
   const ayatData = await getAyatData();
 
   if (ayatData) {
@@ -81,36 +82,44 @@ module.exports.image = async (req, res) => {
     const englishHadithLines = wrapText(randomAyah.hadith.english, 7);
 
     // Create Canvas based on the user's input width and height
-    let canvasHeightAdjusted =
-      type === "horizontal" ? canvasHeight : canvasHeight || 300; // Use the height from query for both types
-    const canvas = createCanvas(canvasWidth, canvasHeightAdjusted);
+    const canvas = createCanvas(canvasWidth, canvasHeight);
     const ctx = canvas.getContext("2d");
 
-    // Set background color based on theme (dark or light)
-    ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
+    // Set the border color based on the theme
+    const borderColor = theme === "dark" ? "#FF5555" : "#87CEEB"; // Dracula red for dark, Sky blue for light
+    ctx.fillStyle = borderColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Set inner canvas background color
+    ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
+    ctx.fillRect(
+      borderWidth,
+      borderWidth,
+      canvas.width - 2 * borderWidth,
+      canvas.height - 2 * borderWidth
+    );
+
     // Set padding
-    const startX = padding;
-    const endX = canvasWidth - padding;
+    const startX = padding + borderWidth;
+    const endX = canvasWidth - padding - borderWidth;
 
     // Draw the Arabic Ayah text (right-aligned, smaller size)
     ctx.font = "24px Amiri"; // Smaller font size for Arabic
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
     ctx.textAlign = "right"; // Right-align Arabic text
-    ctx.fillText(randomAyah.text.arabic, endX - padding, 100);
+    ctx.fillText(randomAyah.text.arabic, endX, 100);
 
     // Draw the English translation text (left-aligned)
     ctx.font = "16px Arial";
     ctx.textAlign = "left"; // Left-align English text
-    ctx.fillText(randomAyah.text.english, startX + padding, 140);
+    ctx.fillText(randomAyah.text.english, startX, 140);
 
     // Surah and Ayah details (smaller text)
     ctx.font = "16px Arial";
     ctx.textAlign = "left"; // Left-align Surah and Ayah
     ctx.fillText(
       `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
-      startX + padding,
+      startX,
       180
     );
 
@@ -119,7 +128,7 @@ module.exports.image = async (req, res) => {
     ctx.textAlign = "right"; // Right-align Arabic Hadith
     let yOffset = 230; // Start position for Arabic Hadith
     arabicHadithLines.forEach((line) => {
-      ctx.fillText(line, endX - padding, yOffset);
+      ctx.fillText(line, endX, yOffset);
       yOffset += lineSpacing; // Increase yOffset for the next line
     });
 
@@ -128,26 +137,30 @@ module.exports.image = async (req, res) => {
     ctx.textAlign = "left"; // Left-align English Hadith
     yOffset = 260; // Start position for English Hadith
     englishHadithLines.forEach((line) => {
-      ctx.fillText(line, startX + padding, yOffset);
+      ctx.fillText(line, startX, yOffset);
       yOffset += lineSpacing; // Increase yOffset for the next line
     });
 
-    // Footer (centered) with some padding and adjusted position
+    // Footer (centered) with padding and margin adjustments
     ctx.font = "14px Arial";
     ctx.textAlign = "center"; // Center-align footer
-    ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, canvasHeight - 50);
+    const footerY = canvasHeight - footerMargin; // Adjusted position
+    ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, footerY - 40);
     ctx.font = "12px Arial";
     ctx.fillText(
       "by Hamza Labbaalli. Pray for me.",
       canvasWidth / 2,
-      canvasHeight - 30
+      footerY - 20
     );
-    ctx.font = "10px Arial";
+    ctx.font = "11px Arial";
     ctx.fillText(
       "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
       canvasWidth / 2,
-      canvasHeight - 10
+      footerY
     );
+
+    // Set the tab title
+    res.setHeader("X-Page-Title", "Quran Sunnah Reminder");
 
     // Send the generated image as a response (PNG format)
     res.setHeader("Content-Type", "image/png");
