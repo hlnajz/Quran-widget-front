@@ -144,7 +144,7 @@ module.exports.image = async (req, res) => {
     );
     ctx.font = "10px Arial";
     ctx.fillText(
-      "لا تنسونا من صالح الدعاء",
+      "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
       canvasWidth / 2,
       canvasHeight - 10
     );
