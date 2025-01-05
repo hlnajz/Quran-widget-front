@@ -119,7 +119,7 @@ module.exports.image = async (req, res) => {
     ctx.fillText(randomAyah.text.arabic, endX, yOffset);
 
     // Margin for the bottom of Arabic Ayah section
-    yOffset += 30 + sectionMarginBottom;
+    yOffset += 20 + sectionMarginBottom;
 
     // Draw the English translation text (left-aligned)
     ctx.font = `${fontSize * 0.8}px Arial`; // Slightly smaller font size for English
@@ -130,7 +130,7 @@ module.exports.image = async (req, res) => {
     });
 
     // Margin for the bottom of English translation section
-    yOffset += 30 + sectionMarginBottom;
+    yOffset += 2 + sectionMarginBottom;
 
     // Surah and Ayah details (smaller text)
     ctx.font = `${fontSize * 0.8}px Arial`;
@@ -142,7 +142,7 @@ module.exports.image = async (req, res) => {
     );
 
     // Margin for the bottom of Surah and Ayah details
-    yOffset += 30 + sectionMarginBottom;
+    yOffset += 20 + sectionMarginBottom;
 
     // Draw the Arabic Hadith text (right-aligned, line by line)
     ctx.font = `${fontSize * 0.9}px Amiri`; // Adjusted font size for Arabic Hadith
@@ -188,7 +188,7 @@ module.exports.image = async (req, res) => {
         canvasWidth / 2,
         footerY - 20
       );
-      ctx.font = `${fontSize * 0.4}px Arial`; // Smallest footer font size
+      ctx.font = `${fontSize * 0.5}px Arial`; // Smallest footer font size
       ctx.fillText(
         "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
         canvasWidth / 2,
