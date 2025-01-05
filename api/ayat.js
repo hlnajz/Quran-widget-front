@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { createCanvas, registerFont } = require("canvas");
+const { createCanvas, registerFont, Image } = require("canvas");
 const path = require("path");
 
 // Register the Amiri font from the public folder
@@ -68,11 +68,16 @@ module.exports.image = async (req, res) => {
   const canvasWidth = parseInt(width, 10);
   const canvasHeight = parseInt(height, 10);
 
-  const padding = 20; // Padding for margins
+  const padding = 20; // Padding for margins inside border
   const lineSpacing = 25; // Increased spacing between lines
-  const borderWidth = 10; // Thickness of the border
+  const borderWidth = 20; // Thickness of the border
   const footerMargin = 30; // Margin from the footer text to the border
+  const sectionMarginTop = 40; // Margin for top of each section (increased for spacing)
+  const sectionMarginBottom = 20; // Margin for bottom of each section
   const ayatData = await getAyatData();
+
+  const footerColor = theme === "dark" ? "#FF5555" : "#00BFFF"; // Dark theme (Dracula red) or light theme (sky blue)
+  const borderColor = theme === "dark" ? "#FF5555" : "#00BFFF"; // Dark theme (Dracula red) or light theme (sky blue)
 
   if (ayatData) {
     const randomAyah = getRandomAyah(ayatData);
@@ -80,17 +85,20 @@ module.exports.image = async (req, res) => {
     // Wrap Hadith into lines with 7 words max
     const arabicHadithLines = wrapText(randomAyah.hadith.arabic, 7);
     const englishHadithLines = wrapText(randomAyah.hadith.english, 7);
+    const englishAyahLines = wrapText(randomAyah.text.english, 7); // Wrap English Ayah with 7 words per line
+
+    // Calculate font size dynamically based on canvas width (make it proportional to canvas width)
+    const fontSize = Math.min(canvasWidth / 30, canvasHeight / 20); // Adjusting for both width and height
 
     // Create Canvas based on the user's input width and height
     const canvas = createCanvas(canvasWidth, canvasHeight);
     const ctx = canvas.getContext("2d");
 
-    // Set the border color based on the theme
-    const borderColor = theme === "dark" ? "#FF5555" : "#87CEEB"; // Dracula red for dark, Sky blue for light
-    ctx.fillStyle = borderColor;
+    // Draw border
+    ctx.fillStyle = borderColor; // Set border color based on the theme
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Set inner canvas background color
+    // Set inner canvas background color (inside the border)
     ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
     ctx.fillRect(
       borderWidth,
@@ -99,72 +107,99 @@ module.exports.image = async (req, res) => {
       canvas.height - 2 * borderWidth
     );
 
-    // Set padding
+    // Set padding for the content inside the border
     const startX = padding + borderWidth;
     const endX = canvasWidth - padding - borderWidth;
 
     // Draw the Arabic Ayah text (right-aligned, smaller size)
-    ctx.font = "24px Amiri"; // Smaller font size for Arabic
+    ctx.font = `${fontSize}px Amiri`; // Dynamic font size for Arabic
     ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
     ctx.textAlign = "right"; // Right-align Arabic text
-    ctx.fillText(randomAyah.text.arabic, endX, 100);
+    let yOffset = sectionMarginTop + borderWidth; // Starting position for Arabic Ayah (after border)
+    ctx.fillText(randomAyah.text.arabic, endX, yOffset);
+
+    // Margin for the bottom of Arabic Ayah section
+    yOffset += 30 + sectionMarginBottom;
 
     // Draw the English translation text (left-aligned)
-    ctx.font = "16px Arial";
+    ctx.font = `${fontSize * 0.8}px Arial`; // Slightly smaller font size for English
     ctx.textAlign = "left"; // Left-align English text
-    ctx.fillText(randomAyah.text.english, startX, 140);
+    englishAyahLines.forEach((line) => {
+      ctx.fillText(line, startX, yOffset);
+      yOffset += lineSpacing; // Increase yOffset for the next line
+    });
+
+    // Margin for the bottom of English translation section
+    yOffset += 30 + sectionMarginBottom;
 
     // Surah and Ayah details (smaller text)
-    ctx.font = "16px Arial";
+    ctx.font = `${fontSize * 0.8}px Arial`;
     ctx.textAlign = "left"; // Left-align Surah and Ayah
     ctx.fillText(
       `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
       startX,
-      180
+      yOffset
     );
 
+    // Margin for the bottom of Surah and Ayah details
+    yOffset += 30 + sectionMarginBottom;
+
     // Draw the Arabic Hadith text (right-aligned, line by line)
-    ctx.font = "18px Amiri";
+    ctx.font = `${fontSize * 0.9}px Amiri`; // Adjusted font size for Arabic Hadith
     ctx.textAlign = "right"; // Right-align Arabic Hadith
-    let yOffset = 230; // Start position for Arabic Hadith
     arabicHadithLines.forEach((line) => {
       ctx.fillText(line, endX, yOffset);
       yOffset += lineSpacing; // Increase yOffset for the next line
     });
 
+    // Margin for the bottom of Arabic Hadith section
+    yOffset += sectionMarginBottom;
+
     // Draw the English Hadith text (left-aligned, line by line)
-    ctx.font = "18px Arial";
+    ctx.font = `${fontSize * 0.8}px Arial`; // Adjusted font size for English Hadith
     ctx.textAlign = "left"; // Left-align English Hadith
-    yOffset = 260; // Start position for English Hadith
     englishHadithLines.forEach((line) => {
       ctx.fillText(line, startX, yOffset);
       yOffset += lineSpacing; // Increase yOffset for the next line
     });
 
-    // Footer (centered) with padding and margin adjustments
-    ctx.font = "14px Arial";
-    ctx.textAlign = "center"; // Center-align footer
-    const footerY = canvasHeight - footerMargin; // Adjusted position
-    ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, footerY - 40);
-    ctx.font = "12px Arial";
-    ctx.fillText(
-      "by Hamza Labbaalli. Pray for me.",
-      canvasWidth / 2,
-      footerY - 20
-    );
-    ctx.font = "11px Arial";
-    ctx.fillText(
-      "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
-      canvasWidth / 2,
-      footerY
-    );
+    // Margin for the bottom of English Hadith section
+    yOffset += sectionMarginBottom;
 
-    // Set the tab title
-    res.setHeader("X-Page-Title", "Quran Sunnah Reminder");
+    // Load and draw the logo (centered)
+    const logoPath = path.join(__dirname, "../public/bga.png");
+    const logo = new Image();
+    logo.onload = () => {
+      const logoWidth = canvasWidth; // Adjust logo width as needed
+      const logoHeight = (logo.height / logo.width) * logoWidth; // Maintain aspect ratio
+      const logoX = (canvasWidth - logoWidth) / 2; // Center horizontally
+      const logoY = (canvasHeight - logoHeight) / 2 - 50; // Center vertically (slightly above the center)
+      ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
 
-    // Send the generated image as a response (PNG format)
-    res.setHeader("Content-Type", "image/png");
-    res.send(canvas.toBuffer());
+      // Footer (centered) with padding and margin adjustments
+      ctx.font = `${fontSize * 0.6}px Arial`; // Dynamic font size for footer
+      ctx.textAlign = "center"; // Center-align footer
+      const footerY = canvasHeight - footerMargin; // Adjusted position
+      ctx.fillStyle = footerColor; // Set footer color based on the theme
+      ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, footerY - 40);
+      ctx.font = `${fontSize * 0.5}px Arial`; // Smaller footer font size
+      ctx.fillText(
+        "by Hamza Labbaalli - hlnajz",
+        canvasWidth / 2,
+        footerY - 20
+      );
+      ctx.font = `${fontSize * 0.4}px Arial`; // Smallest footer font size
+      ctx.fillText(
+        "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
+        canvasWidth / 2,
+        footerY
+      );
+
+      // Send the generated image as a response (PNG format)
+      res.setHeader("Content-Type", "image/png");
+      res.send(canvas.toBuffer());
+    };
+    logo.src = logoPath; // Set the source after attaching the onload handler
   } else {
     res.status(500).json({ error: "Failed to fetch ayat data" });
   }
