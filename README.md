@@ -96,6 +96,6 @@ Feel Free to use it and share it 🥇😘
 
 #### Acknowledgements:
 Ayah data provided by my quran-ayat-json.
-![Quran-Hadith-Api](https://quran-ayat-json.vercel.app/)
+[Quran-Hadith-Api](https://quran-ayat-json.vercel.app/)
 
 ### Hadith Sahih ###. translations sourced from authentic collections 
