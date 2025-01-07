@@ -60,11 +60,23 @@ JSON endpoint: http://localhost:3000/api/json
 
 Image endpoint: http://localhost:3000/api/image
 
+
+
 ### Customization:
 
 Fonts: The API uses the Amiri font for Arabic text. Ensure the font file is located at public/fonts/Amiri-Regular.ttf.
 
 Logo: To include a custom logo in the generated images, place your image at public/qr.png.
+
+Light Theme
+ ```json
+https://quran-widget-front.vercel.app/ayat/image?theme=light&type=vertical&width=800&height=500
+ ```
+
+Dark Theme
+ ```json
+https://quran-widget-front.vercel.app/ayat/image?theme=dark&type=vertical&width=800&height=500
+ ```
 
 ### Dependencies:
 
@@ -84,4 +96,6 @@ Feel Free to use it and share it 🥇😘
 
 #### Acknowledgements:
 Ayah data provided by my quran-ayat-json.
-Hadith translations sourced from authentic collections.
+![Quran-Hadith-Api](https://quran-ayat-json.vercel.app/)
+
+### Hadith Sahih ###. translations sourced from authentic collections 
