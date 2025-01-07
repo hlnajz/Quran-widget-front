@@ -1,7 +1,7 @@
 {
-  "name": "quran-widget-front",
+  "name": "quran-sunnah-remainder",
   "version": "1.0.0",
-  "description": "Quran Ayat Widget",
+  "description": "Quran Sunnah Remainder",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
