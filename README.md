@@ -40,7 +40,7 @@ Installation
 git clone https://github.com/hlnajz/Quran-widget-front.git
 
  ```
-3.
+
 Navigate to the project directory:
  ```bash
 cd Quran-widget-front
