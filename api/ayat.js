@@ -2,7 +2,7 @@ const axios = require("axios");
 const { createCanvas, registerFont, Image } = require("canvas");
 const path = require("path");
 
-// Amiri font for arabic text
+// Amiri font for Arabic text
 registerFont(path.join(__dirname, "../public/fonts/Amiri-Regular.ttf"), {
   family: "Amiri",
 });
@@ -44,6 +44,34 @@ function wrapText(text, maxWordsPerLine) {
   return lines;
 }
 
+// Define the four themes with color schemes
+const themes = {
+  dark: {
+    backgroundColor: "#1a1a1d",
+    textColor: "#ffffff",
+    borderColor: "#FF5555",
+    footerColor: "#FF5555",
+  },
+  light: {
+    backgroundColor: "#ffffff",
+    textColor: "#000000",
+    borderColor: "#00BFFF",
+    footerColor: "#00BFFF",
+  },
+  blue: {
+    backgroundColor: "#E3F2FD",
+    textColor: "#0D47A1",
+    borderColor: "#1976D2",
+    footerColor: "#1976D2",
+  },
+  green: {
+    backgroundColor: "#E8F5E9",
+    textColor: "#1B5E20",
+    borderColor: "#4CAF50",
+    footerColor: "#4CAF50",
+  },
+};
+
 // Route 1: Return Random Ayah as JSON
 module.exports.json = async (req, res) => {
   const ayatData = await getAyatData();
@@ -67,7 +95,7 @@ module.exports.image = async (req, res) => {
   const canvasWidth = parseInt(width, 10);
   const canvasHeight = parseInt(height, 10);
 
-  // styiling variables and size of fonts parameters
+  // Styling variables and size of fonts parameters
   const padding = 20;
   const lineSpacing = 25;
   const borderWidth = 20;
@@ -76,8 +104,8 @@ module.exports.image = async (req, res) => {
   const sectionMarginBottom = 20;
   const ayatData = await getAyatData();
 
-  const footerColor = theme === "dark" ? "#FF5555" : "#00BFFF";
-  const borderColor = theme === "dark" ? "#FF5555" : "#00BFFF";
+  // Get the selected theme or default to "dark"
+  const selectedTheme = themes[theme] || themes.dark;
 
   if (ayatData) {
     const randomAyah = getRandomAyah(ayatData);
@@ -92,10 +120,10 @@ module.exports.image = async (req, res) => {
     const ctx = canvas.getContext("2d");
 
     // Drawing Canvas
-    ctx.fillStyle = borderColor;
+    ctx.fillStyle = selectedTheme.borderColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = theme === "dark" ? "#1a1a1d" : "#ffffff";
+    ctx.fillStyle = selectedTheme.backgroundColor;
     ctx.fillRect(
       borderWidth,
       borderWidth,
@@ -108,7 +136,7 @@ module.exports.image = async (req, res) => {
 
     // Arabic Ayah
     ctx.font = `${fontSize}px Amiri`;
-    ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+    ctx.fillStyle = selectedTheme.textColor;
     ctx.textAlign = "right";
     let yOffset = sectionMarginTop + borderWidth;
     ctx.fillText(randomAyah.text.arabic, endX, yOffset);
@@ -145,7 +173,7 @@ module.exports.image = async (req, res) => {
 
     yOffset += 2 + sectionMarginBottom;
 
-    //English Hadith
+    // English Hadith
     ctx.font = `${fontSize * 0.8}px Arial`;
     ctx.textAlign = "left";
     englishHadithLines.forEach((line) => {
@@ -155,7 +183,7 @@ module.exports.image = async (req, res) => {
 
     yOffset += 2 + sectionMarginBottom;
 
-    // background
+    // Background
     const logoPath = path.join(__dirname, "../public/bga.png");
     const logo = new Image();
     logo.onload = () => {
@@ -169,7 +197,7 @@ module.exports.image = async (req, res) => {
       ctx.font = `${fontSize * 0.6}px Arial`;
       ctx.textAlign = "center";
       const footerY = canvasHeight - footerMargin;
-      ctx.fillStyle = footerColor;
+      ctx.fillStyle = selectedTheme.footerColor;
       ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, footerY - 40);
       ctx.font = `${fontSize * 0.5}px Arial`;
       ctx.fillText(
@@ -184,7 +212,7 @@ module.exports.image = async (req, res) => {
         footerY
       );
 
-      // Send the generated image as a response PNG format
+      // Send the generated image as a response in PNG format
       res.setHeader("Content-Type", "image/png");
       res.send(canvas.toBuffer());
     };
