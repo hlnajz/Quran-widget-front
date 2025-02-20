@@ -7,23 +7,61 @@ registerFont(path.join(__dirname, "../public/fonts/Amiri-Regular.ttf"), {
   family: "Amiri",
 });
 
-// Fetch Ayat Data from Remote JSON API Mine - https://quran-ayat-json.vercel.app/
+// Theme color definitions
+const themes = {
+  dark: {
+    borderColor: "#FF5555",
+    footerColor: "#FF5555",
+    bgColor: "#1a1a1d",
+    textColor: "#ffffff",
+  },
+  light: {
+    borderColor: "#00BFFF",
+    footerColor: "#00BFFF",
+    bgColor: "#ffffff",
+    textColor: "#000000",
+  },
+  ocean: {
+    borderColor: "#0077B6",
+    footerColor: "#0096C7",
+    bgColor: "#CAF0F8",
+    textColor: "#03045E",
+  },
+  forest: {
+    borderColor: "#228B22",
+    footerColor: "#32CD32",
+    bgColor: "#E0F2F1",
+    textColor: "#004D40",
+  },
+  sunset: {
+    borderColor: "#FF4500",
+    footerColor: "#FF6347",
+    bgColor: "#FFF5E1",
+    textColor: "#8B0000",
+  },
+  royal: {
+    borderColor: "#6A0DAD",
+    footerColor: "#8A2BE2",
+    bgColor: "#F3E5F5",
+    textColor: "#4B0082",
+  },
+};
+
+// Fetch Ayat Data
 async function getAyatData() {
   try {
     const response = await axios.get("https://quran-ayat-json.vercel.app/");
-    return response.data; // Return the JSON data
+    return response.data;
   } catch (error) {
     console.error("Error fetching ayat data:", error);
     return null;
   }
 }
 
-// Get a Random Ayah
 function getRandomAyah(ayat) {
   return ayat[Math.floor(Math.random() * ayat.length)];
 }
 
-// Split text into lines with max 7 words per line
 function wrapText(text, maxWordsPerLine) {
   const words = text.split(" ");
   const lines = [];
@@ -36,48 +74,16 @@ function wrapText(text, maxWordsPerLine) {
       currentLine = [];
     }
   });
-
-  if (currentLine.length > 0) {
-    lines.push(currentLine.join(" "));
-  }
+  if (currentLine.length > 0) lines.push(currentLine.join(" "));
 
   return lines;
 }
-
-// Define the four themes with color schemes
-const themes = {
-  dark: {
-    backgroundColor: "#1a1a1d",
-    textColor: "#ffffff",
-    borderColor: "#FF5555",
-    footerColor: "#FF5555",
-  },
-  light: {
-    backgroundColor: "#ffffff",
-    textColor: "#000000",
-    borderColor: "#00BFFF",
-    footerColor: "#00BFFF",
-  },
-  blue: {
-    backgroundColor: "#E3F2FD",
-    textColor: "#0D47A1",
-    borderColor: "#1976D2",
-    footerColor: "#1976D2",
-  },
-  green: {
-    backgroundColor: "#E8F5E9",
-    textColor: "#1B5E20",
-    borderColor: "#4CAF50",
-    footerColor: "#4CAF50",
-  },
-};
 
 // Route 1: Return Random Ayah as JSON
 module.exports.json = async (req, res) => {
   const ayatData = await getAyatData();
   if (ayatData) {
-    const randomAyah = getRandomAyah(ayatData);
-    res.json(randomAyah);
+    res.json(getRandomAyah(ayatData));
   } else {
     res.status(500).json({ error: "Failed to fetch ayat data" });
   }
@@ -85,17 +91,11 @@ module.exports.json = async (req, res) => {
 
 // Route 2: Generate and Return Ayah as Image
 module.exports.image = async (req, res) => {
-  const {
-    theme = "dark", // default setting
-    type = "vertical",
-    width = 800,
-    height = 500,
-  } = req.query;
-
+  const { theme = "dark", width = 800, height = 500 } = req.query;
+  const selectedTheme = themes[theme] || themes.dark;
   const canvasWidth = parseInt(width, 10);
   const canvasHeight = parseInt(height, 10);
 
-  // Styling variables and size of fonts parameters
   const padding = 20;
   const lineSpacing = 25;
   const borderWidth = 20;
@@ -104,26 +104,19 @@ module.exports.image = async (req, res) => {
   const sectionMarginBottom = 20;
   const ayatData = await getAyatData();
 
-  // Get the selected theme or default to "dark"
-  const selectedTheme = themes[theme] || themes.dark;
-
   if (ayatData) {
     const randomAyah = getRandomAyah(ayatData);
-
-    const arabicHadithLines = wrapText(randomAyah.hadith.arabic, 7);
-    const englishHadithLines = wrapText(randomAyah.hadith.english, 7);
-    const englishAyahLines = wrapText(randomAyah.text.english, 7);
-
+    const arabicLines = wrapText(randomAyah.text.arabic, 7);
+    const englishLines = wrapText(randomAyah.text.english, 7);
     const fontSize = Math.min(canvasWidth / 30, canvasHeight / 20);
 
     const canvas = createCanvas(canvasWidth, canvasHeight);
     const ctx = canvas.getContext("2d");
 
-    // Drawing Canvas
     ctx.fillStyle = selectedTheme.borderColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = selectedTheme.backgroundColor;
+    ctx.fillStyle = selectedTheme.bgColor;
     ctx.fillRect(
       borderWidth,
       borderWidth,
@@ -131,92 +124,46 @@ module.exports.image = async (req, res) => {
       canvas.height - 2 * borderWidth
     );
 
-    const startX = padding + borderWidth;
-    const endX = canvasWidth - padding - borderWidth;
-
-    // Arabic Ayah
-    ctx.font = `${fontSize}px Amiri`;
     ctx.fillStyle = selectedTheme.textColor;
+    ctx.font = `${fontSize}px Amiri`;
     ctx.textAlign = "right";
     let yOffset = sectionMarginTop + borderWidth;
-    ctx.fillText(randomAyah.text.arabic, endX, yOffset);
-
-    yOffset += 20 + sectionMarginBottom;
-
-    // English Ayah
-    ctx.font = `${fontSize * 0.8}px Arial`;
-    ctx.textAlign = "left";
-    englishAyahLines.forEach((line) => {
-      ctx.fillText(line, startX, yOffset);
+    arabicLines.forEach((line) => {
+      ctx.fillText(line, canvasWidth - padding - borderWidth, yOffset);
       yOffset += lineSpacing;
     });
 
-    yOffset += 2 + sectionMarginBottom;
-
+    yOffset += sectionMarginBottom;
     ctx.font = `${fontSize * 0.8}px Arial`;
-    ctx.textAlign = "left"; // Left-align Surah and Ayah
+    ctx.textAlign = "left";
+    englishLines.forEach((line) => {
+      ctx.fillText(line, padding + borderWidth, yOffset);
+      yOffset += lineSpacing;
+    });
+
+    yOffset += sectionMarginBottom;
+    ctx.font = `${fontSize * 0.6}px Arial`;
     ctx.fillText(
-      `- Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
-      startX,
+      `Surah: ${randomAyah.surah}, Ayah: ${randomAyah.ayah}`,
+      padding + borderWidth,
       yOffset
     );
 
-    yOffset += 10 + sectionMarginBottom;
+    const footerY = canvasHeight - footerMargin;
+    ctx.font = `${fontSize * 0.6}px Arial`;
+    ctx.textAlign = "center";
+    ctx.fillStyle = selectedTheme.footerColor;
+    ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, footerY - 40);
+    ctx.font = `${fontSize * 0.5}px Arial`;
+    ctx.fillText("by Hamza Labbaalli - hlnajz", canvasWidth / 2, footerY - 20);
+    ctx.fillText(
+      "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
+      canvasWidth / 2,
+      footerY
+    );
 
-    // Arabic Hadith
-    ctx.font = `${fontSize * 0.9}px Amiri`;
-    ctx.textAlign = "right";
-    arabicHadithLines.forEach((line) => {
-      ctx.fillText(line, endX, yOffset);
-      yOffset += lineSpacing;
-    });
-
-    yOffset += 2 + sectionMarginBottom;
-
-    // English Hadith
-    ctx.font = `${fontSize * 0.8}px Arial`;
-    ctx.textAlign = "left";
-    englishHadithLines.forEach((line) => {
-      ctx.fillText(line, startX, yOffset);
-      yOffset += lineSpacing;
-    });
-
-    yOffset += 2 + sectionMarginBottom;
-
-    // Background
-    const logoPath = path.join(__dirname, "../public/bga.png");
-    const logo = new Image();
-    logo.onload = () => {
-      const logoWidth = canvasWidth;
-      const logoHeight = (logo.height / logo.width) * logoWidth;
-      const logoX = (canvasWidth - logoWidth) / 2;
-      const logoY = (canvasHeight - logoHeight) / 2 - 50;
-      ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
-
-      // Footer
-      ctx.font = `${fontSize * 0.6}px Arial`;
-      ctx.textAlign = "center";
-      const footerY = canvasHeight - footerMargin;
-      ctx.fillStyle = selectedTheme.footerColor;
-      ctx.fillText("Quran Sunnah Reminder", canvasWidth / 2, footerY - 40);
-      ctx.font = `${fontSize * 0.5}px Arial`;
-      ctx.fillText(
-        "by Hamza Labbaalli - hlnajz",
-        canvasWidth / 2,
-        footerY - 20
-      );
-      ctx.font = `${fontSize * 0.5}px Arial`;
-      ctx.fillText(
-        "لا تنسونا من صالح الدعاء لي ولوالديّ، وترحموا على أخي أمين أمهيث",
-        canvasWidth / 2,
-        footerY
-      );
-
-      // Send the generated image as a response in PNG format
-      res.setHeader("Content-Type", "image/png");
-      res.send(canvas.toBuffer());
-    };
-    logo.src = logoPath; // Set the source after attaching the onload handler
+    res.setHeader("Content-Type", "image/png");
+    res.send(canvas.toBuffer());
   } else {
     res.status(500).json({ error: "Failed to fetch Quran Sunnah data" });
   }
