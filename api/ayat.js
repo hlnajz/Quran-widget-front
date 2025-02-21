@@ -34,19 +34,36 @@ module.exports.image = async (req, res) => {
       textColor: "#000000",
       arabicTextColor: "#000000",
     },
-    blue: {
-      footerColor: "#00CED1",
-      borderColor: "#00CED1",
-      backgroundColor: "#f0f8ff",
-      textColor: "#00008B",
-      arabicTextColor: "#00008B",
+
+    ocean: {
+      borderColor: "#0077B6",
+      footerColor: "#0096C7",
+      bgColor: "#CAF0F8",
+      textColor: "#03045E",
     },
-    green: {
+    forest: {
+      borderColor: "#228B22",
       footerColor: "#32CD32",
-      borderColor: "#32CD32",
-      backgroundColor: "#f0fff0",
-      textColor: "#006400",
-      arabicTextColor: "#006400",
+      bgColor: "#E0F2F1",
+      textColor: "#004D40",
+    },
+    sunset: {
+      borderColor: "#FF4500",
+      footerColor: "#FF6347",
+      bgColor: "#FFF5E1",
+      textColor: "#8B0000",
+    },
+    royal: {
+      borderColor: "#6A0DAD",
+      footerColor: "#8A2BE2",
+      bgColor: "#F3E5F5",
+      textColor: "#4B0082",
+    },
+    desert: {
+      borderColor: "#FFA500",
+      footerColor: "#FFD700",
+      bgColor: "#FFF3E0",
+      textColor: "#8B4513",
     },
   };
 
