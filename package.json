@@ -7,11 +7,11 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.7.9",
     "canvas": "^3.1.0",
-    "express": "^4.17.1",
+    "express": "^4.21.2",
     "sharp": "^0.33.5",
-    "vercel": "^39.2.5"
+    "vercel": "^41.1.4"
   },
   "author": "",
   "license": "ISC"
