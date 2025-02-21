@@ -1,3 +1,4 @@
+
 # Quran Sunnah Reminder API
 
 The Quran Sunnah Reminder API provides endpoints to fetch random Ayahs (verses) from the Quran along with related Hadiths. It offers both JSON responses and dynamically generated images containing the Ayah and Hadith text.
@@ -34,15 +35,15 @@ The Quran Sunnah Reminder API provides endpoints to fetch random Ayahs (verses) 
 URL: /api/image
 Method: GET
 Query Parameters:
-theme (optional): Set to dark or light. Default is dark.
+theme (optional): Set to any of the following themes: `dark`, `light`, `ocean`, `forest`, `sunset`, `royal`, `desert`. Default is `dark`.
 width (optional): Image width in pixels. Default is 800.
 height (optional): Image height in pixels. Default is 500.
 Response: Returns a PNG image containing the Ayah and Hadith text.
-Installation
+
+## Installation
 
 ```bash
 git clone https://github.com/hlnajz/quran-sunnah-remainder.git
-
 ```
 
 Navigate to the project directory:
@@ -57,7 +58,7 @@ Install dependencies:
 npm install
 ```
 
-Usage
+## Usage
 Start the server:
 
 ```bash
@@ -76,16 +77,48 @@ Fonts: The API uses the Amiri font for Arabic text. Ensure the font file is loca
 
 Logo: To include a custom logo in the generated images, place your image at public/qr.png.
 
-Light Theme
+### Example Themes:
+
+#### Light Theme
 
 ```json
 https://quran-sunnah-remainder.vercel.app/ayat/image?theme=light&type=vertical&width=800&height=500
 ```
 
-Dark Theme
+#### Dark Theme
 
 ```json
 https://quran-sunnah-remainder.vercel.app/ayat/image?theme=dark&type=vertical&width=800&height=500
+```
+
+#### Ocean Theme
+
+```json
+https://quran-sunnah-remainder.vercel.app/ayat/image?theme=ocean&type=vertical&width=800&height=500
+```
+
+#### Forest Theme
+
+```json
+https://quran-sunnah-remainder.vercel.app/ayat/image?theme=forest&type=vertical&width=800&height=500
+```
+
+#### Sunset Theme
+
+```json
+https://quran-sunnah-remainder.vercel.app/ayat/image?theme=sunset&type=vertical&width=800&height=500
+```
+
+#### Royal Theme
+
+```json
+https://quran-sunnah-remainder.vercel.app/ayat/image?theme=royal&type=vertical&width=800&height=500
+```
+
+#### Desert Theme
+
+```json
+https://quran-sunnah-remainder.vercel.app/ayat/image?theme=desert&type=vertical&width=800&height=500
 ```
 
 ### Dependencies:
